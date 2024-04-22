@@ -1,0 +1,25 @@
+name: Purge PR Images
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  purge-pr-images:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Purge PR specific images
+        uses: vlaurin/action-ghcr-prune@v0.6.0
+        with:
+          token: ${{ secrets.GHCR_TOKEN }}
+          organization: ${{ github.repository_owner }}
+          container: ${{ github.event.repository.name }}
+          prune-tags-regexes: 'pr-${{ github.event.pull_request.number }}$'
